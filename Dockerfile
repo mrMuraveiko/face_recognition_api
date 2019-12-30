@@ -10,7 +10,7 @@ ENV PYTHONUNUFFERED 1
 ENV LANG C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
 
-ENV PORT=8000
+ENV PORT=8888
 
 RUN apt-get update && \ 
     apt-get upgrade -y && \
