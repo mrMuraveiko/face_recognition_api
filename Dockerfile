@@ -47,6 +47,7 @@ RUN pipenv install --skip-lock --system --dev
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y libboost-all-dev
 RUN pip3 install dlib
+RUN pip3 install opencv-python
 RUN pip3 install face_recognition
 RUN pip3 install watchdog
 
