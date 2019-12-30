@@ -11,7 +11,7 @@ import numpy as np
 import os
 import cv2
 
-destdir = '/home/lim/projects/face_recognition_api/media'
+destdir = str(os.getcwd())
 
 
 @method_decorator(csrf_exempt)
