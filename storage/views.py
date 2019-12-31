@@ -11,7 +11,7 @@ import numpy as np
 import os
 import cv2
 
-destdir = str(os.getcwd())
+destdir = f'{os.getcwd()}/media'
 
 
 @method_decorator(csrf_exempt)
