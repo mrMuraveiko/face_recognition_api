@@ -31,7 +31,7 @@ def storage(request):
 
     if request.method == 'GET':
         try:
-            files = next(os.walk(destdir))[2]
+            files = [f for f in next(os.walk(destdir))[2] if f.split('.')[-1] != 'npy']
             res = []
             [res.append(filename) for filename in files if re.search(r".jpg$|.jpeg$|.png$", filename)]
             return HttpResponse([res], status=200)
@@ -42,12 +42,15 @@ def storage(request):
 def recognize(request):
     if request.method == 'POST':
         try:                        
-            files = next(os.walk(destdir))[2]
-
-            if json.loads(request.POST.get('content')).get('count') <= len(files) and json.loads(request.POST.get('content')).get('count') > 0:
-                res_len = json.loads(request.POST.get('content')).get('count')
+            files = [f for f in next(os.walk(destdir))[2] if f.split('.')[-1] != 'npy']                                  
+            
+            if int(json.loads(request.POST.get('content')).get('count')) <= len(files) and int(json.loads(request.POST.get('content')).get('count')) > 0:                
+                res_len = int(json.loads(request.POST.get('content')).get('count'))
             else:
-                res_len = len(files)
+                if len(files) > 10:
+                    res_len = 10
+                else:
+                    res_len = len(files)
 
             uploaded_file = request.FILES['image']
 
@@ -55,11 +58,11 @@ def recognize(request):
 
             fs = FileSystemStorage()            
             fs.save(tmp_file_name, uploaded_file)
-            target_image = cv2.imread(f'{destdir}/{tmp_file_name}')
-
-            fs.delete(tmp_file_name)                                
+            target_image = cv2.imread(f'{destdir}/{tmp_file_name}')                                         
             
             face_locations_target, face_encodings_target = face_recognition_settings.get_face_embeddings_from_image(target_image, convert_to_rgb=True)
+
+            fs.delete(tmp_file_name)   
 
             if json.loads(request.POST.get('content')).get('data'):
                 data = json.loads(request.POST.get('content')).get('data')
@@ -90,14 +93,15 @@ def recognize(request):
                     
             return JsonResponse(res, safe=False, status=200)
             
-        except:
+        except Exception as ex:
+            print(ex)
             return HttpResponse(request, status=500)
 
 
 def precalculate(request):
     if request.method == 'GET':
         try :
-            files = next(os.walk(destdir))[2]
+            files = [f for f in next(os.walk(destdir))[2] if f.split('.')[-1] != 'npy']
 
             images = np.array([cv2.imread(f'{destdir}/{filename}') for filename in files if re.search(r".jpg$|.jpeg$|.png$", filename)])
             images_and_vectors = face_recognition_settings.make_precalculate_work_on_images(images, files)
