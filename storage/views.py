@@ -82,20 +82,35 @@ def recognize(request):
                     images = np.array([cv2.imread(f'{destdir}/{filename}') for filename in files if re.search(r".jpg$|.jpeg$|.png$", filename)])
                     images_and_vectors = face_recognition_settings.make_precalculate_work_on_images(images, files)                                                            
             
-            result = face_recognition_settings.python_work(images_and_vectors, face_encodings_target, files, res_len)
+            nearest_images_with_coefs = face_recognition_settings.python_work(images_and_vectors, face_encodings_target, files, res_len)
+
+            tmp = []
+            for key in nearest_images_with_coefs:
+                tmp.append(round(nearest_images_with_coefs[key], 2))
+            nearest_images_with_coefs = sorted(nearest_images_with_coefs.items(), key=lambda x: x[1])
+
+            interval_end = max(tmp)
+            amount_of_layers = 10
+            step = (max(tmp) - min(tmp)) / amount_of_layers
+            procents = []
+
+            left_corner = min(tmp)
+            for distance in tmp:
+            if distance <= left_corner + step:
+                procents.append(amount_of_layers)
+            else:
+                amount_of_layers -= 1
+                while distance > left_corner + step:
+                left_corner += step
+                procents.append(amount_of_layers)
             
-            for key in result:                
-                result[key] = abs(result[key] - 1) * 120
-                if result[key] > 100:
-                    result[key] = 100
-            res = []
-            [res.append({"path": key, "result": str(round(result[key], 2)) + '%'}) for key in result]            
+            result = []
+            i = 0
+            for key in nearest_images_with_coefs:
+                result.append({"path": key[0], "result": f'{str(procents[i] * 10)}%'})
+                i += 1          
                     
             return JsonResponse(res, safe=False, status=200)
-            
-        except Exception as ex:
-            print(ex)
-            return HttpResponse(request, status=500)
 
 
 def precalculate(request):
