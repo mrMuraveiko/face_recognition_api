@@ -53,7 +53,7 @@ def storage(request):
 def recognize(request):
     if request.method == 'POST':
         try:
-            if !os.path.exists(f'{destdir}/images_and_vectors.npy'):
+            if not os.path.exists(f'{destdir}/images_and_vectors.npy'):
                 return HttpResponse(request, status=409)
 
             images_and_vectors = np.load(
