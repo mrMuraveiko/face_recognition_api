@@ -59,15 +59,6 @@ def recognize(request):
             images_and_vectors = np.load(
                 f'{destdir}/images_and_vectors.npy', allow_pickle=True)
 
-            if int(json.loads(request.POST.get('content')).get('count')) <= len(images_and_vectors) and int(json.loads(request.POST.get('content')).get('count')) > 0:
-                res_len = int(json.loads(
-                    request.POST.get('content')).get('count'))
-            else:
-                if len(images_and_vectors) > 10:
-                    res_len = 10
-                else:
-                    res_len = len(images_and_vectors)
-
             uploaded_file = request.FILES['image']
             extension = uploaded_file.name.split('.')[-1]
             if extension != 'jpg' or extension != 'jpeg' or extension != 'png':
@@ -85,7 +76,7 @@ def recognize(request):
             fs.delete(tmp_file_name)
 
             nearest_images_with_coefs = face_recognition_settings.python_work(
-                images_and_vectors, face_encodings_target, res_len)
+                images_and_vectors, face_encodings_target, len(images_and_vectors))
 
             tmp = []
             for key in nearest_images_with_coefs:
