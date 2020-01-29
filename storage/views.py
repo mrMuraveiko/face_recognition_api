@@ -21,13 +21,14 @@ def storage(request):
     if request.method == 'POST':
         try:
             if os.path.exists(f'{destdir}/images_and_vectors.npy'):
-                images_and_vectors = np.load(f'{destdir}/images_and_vectors.npy', allow_pickle=True)
+                images_and_vectors = np.load(
+                    f'{destdir}/images_and_vectors.npy', allow_pickle=True)
             else:
                 images_and_vectors = []
 
             uploaded_file = request.FILES['image']
             extension = uploaded_file.name.split('.')[-1]
-            if extension != 'jpg' or extension != 'jpeg' or extension != 'png':
+            if not any([extension == i or i in ['jpg', 'jpeg', 'png']]):
                 return HttpResponse(request, status=409)
 
             tmp_file_name = f"tmp_{uploaded_file.name}." + extension
@@ -55,11 +56,12 @@ def recognize(request):
             if not os.path.exists(f'{destdir}/images_and_vectors.npy'):
                 return HttpResponse(request, status=409)
 
-            images_and_vectors = np.load(f'{destdir}/images_and_vectors.npy', allow_pickle=True)
+            images_and_vectors = np.load(
+                f'{destdir}/images_and_vectors.npy', allow_pickle=True)
 
             uploaded_file = request.FILES['image']
             extension = uploaded_file.name.split('.')[-1]
-            if extension != 'jpg' or extension != 'jpeg' or extension != 'png':
+            if not any([extension == i or i in ['jpg', 'jpeg', 'png']]):
                 return HttpResponse(request, status=409)
 
             tmp_file_name = f"tmp_{uploaded_file.name}." + extension
@@ -68,7 +70,8 @@ def recognize(request):
             fs.save(tmp_file_name, uploaded_file)
             target_image = cv2.imread(f'{destdir}/{tmp_file_name}')
 
-            face_locations_target, face_encodings_target = face_recognition_settings.get_face_embeddings_from_image(target_image, convert_to_rgb=True)
+            face_locations_target, face_encodings_target = face_recognition_settings.get_face_embeddings_from_image(
+                target_image, convert_to_rgb=True)
 
             fs.delete(tmp_file_name)
 
@@ -78,7 +81,8 @@ def recognize(request):
             tmp = []
             for key in nearest_images_with_coefs:
                 tmp.append(round(nearest_images_with_coefs[key], 2))
-            nearest_images_with_coefs = sorted(nearest_images_with_coefs.items(), key=lambda x: x[1])
+            nearest_images_with_coefs = sorted(
+                nearest_images_with_coefs.items(), key=lambda x: x[1])
 
             interval_end = max(tmp)
             amount_of_layers = 10
@@ -98,7 +102,8 @@ def recognize(request):
             result = []
             i = 0
             for key in nearest_images_with_coefs:
-                result.append({"path": key[0], "result": f'{str(procents[i] * 10)}%'})
+                result.append(
+                    {"path": key[0], "result": f'{str(procents[i] * 10)}%'})
                 i += 1
 
             return JsonResponse(res, safe=False, status=200)
